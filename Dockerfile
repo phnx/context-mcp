@@ -8,8 +8,9 @@ COPY requirements.txt .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy application code & initial data
 COPY src/ ./src/
+COPY database/ ./database/
 
 # Target 1: FastMCP Server
 FROM base as mcp-server
