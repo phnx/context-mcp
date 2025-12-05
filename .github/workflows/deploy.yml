@@ -19,15 +19,13 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Install pipenv
-        run: pip install pipenv
-
-      - name: Install dev dependencies
-        run: pipenv install --dev
+      - name: Install all dependencies
+        run: pip install --no-cache-dir -r requirements.txt
 
       - name: Run pytest
         run: pipenv run pytest test/test_server.py -v -s
 
+  # do not use deploy on commit - use github action to complete test before deploy
   deploy:
     name: Deploy to Render
     needs: test
