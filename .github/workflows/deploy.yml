@@ -38,7 +38,7 @@ jobs:
         env:
           RENDER_DEPLOY_HOOK_MCP_SERVER: ${{ secrets.RENDER_DEPLOY_HOOK_MCP_SERVER }}
 
-      # - name: Trigger Web Client deploy
-      #   run: curl -X POST "$RENDER_DEPLOY_HOOK_WEB_CLIENT"
-      #   env:
-      #     RENDER_DEPLOY_HOOK_WEB_CLIENT: ${{ secrets.RENDER_DEPLOY_HOOK_WEB_CLIENT }}
+      - name: Trigger Web Client deploy
+        run: curl -X POST "$RENDER_DEPLOY_HOOK_WEB_CLIENT"
+        env:
+          RENDER_DEPLOY_HOOK_WEB_CLIENT: ${{ secrets.RENDER_DEPLOY_HOOK_WEB_CLIENT }}

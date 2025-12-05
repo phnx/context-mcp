@@ -40,3 +40,4 @@ Keeping track of active tasks & statuses
 - database adapter -> technically feasible & straightforward -> use json now for ease of manipulation & testing
 - authentication -> token-based authentication or more robust protocol e.g., OAuth
 - admin privileges -> restricted functions e.g., list user -> should be implemented after authentication & authorization
+- model performance test -> build set of difficult test cases, e.g., hard semantic similarity questions, to find best-performing models

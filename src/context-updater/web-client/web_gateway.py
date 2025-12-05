@@ -1,6 +1,7 @@
 # web_gateway.py
 import asyncio
 import json
+import logging
 import os
 import sys
 
@@ -20,6 +21,15 @@ from client_core import MemoryConversation
 
 # Initialize OpenAI client
 llm_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# Configure logging to stderr
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] [%(levelname)s] - %(message)s",
+    stream=sys.stderr,
+)
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -59,15 +69,17 @@ def create_conversation(user_id: str) -> MemoryConversation:
 async def chat(request: ChatRequest):
     """Send message and get response"""
     try:
+        logger.info("step 1")
         user_id = sanitize_user_id(request.user_id)
-
+        logger.info("step 2")
         # Create conversation in thread pool if needed
         if user_id not in conversations:
             conversations[user_id] = await asyncio.to_thread(
                 create_conversation, user_id
             )
-
+        logger.info("step 3")
         conversation = conversations[user_id]
+        logger.info("step 4")
         response = await asyncio.to_thread(conversation.chat, request.message)
 
         return {"response": response, "user_id": user_id}

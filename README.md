@@ -1,5 +1,7 @@
 # MCP Application - Context Memory Updater
 
+[![CI/CD for MCP Context Server](https://github.com/phnx/context-mcp/actions/workflows/deploy.yml/badge.svg)](https://github.com/phnx/context-mcp/actions/workflows/deploy.yml)
+
 This application showcases context memory using Model Context Protocol (MCP) tools in an LLM-based system.
 It allows different users to store, retrieve, and update their travel preferences and other general memories with intelligence assistant through a chatinterface.
 
@@ -133,7 +135,8 @@ RUN_LLM_TESTS=true pytest test/test_llm.py::TestLLMRealHallucination::test_llm_s
 
 There are several pending tasks on [TODOs](TASKLIST.md).
 - **scalable database**: currently, we're using single json file to store data. Even with file locking process to prevent access conflict, it's definitely not ideal. We can create an pydantic-based adapter that connects tools to more robust database instance via the unified datamodels, making data more persistent--only modify `server_database.py`.
-- **proper user authentication**: there's no authentication mechanism per se, only unique user identification. To achieve this, we can 1) implement simple token-based authentication with a set of pre-defined users or 2) implement dynamic registration using well-established protocol such as OAuth.
+- **proper user authentication & authorization**: there's no authentication mechanism per se, only unique user identification. To achieve this, we can 1) implement simple token-based authentication with a set of pre-defined users / roles or 2) implement dynamic registration using well-established protocol such as OAuth.
+- **model performance test**: we use `gpt-4o-mini` for its cost effectiveness. It should be tested whether switching to more advanced models worth the costs for this type of tasks. We can create semantically difficult dataset and questions to test this out.
 
 ## Final Thoughts
 
