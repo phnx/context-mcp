@@ -12,8 +12,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src" / "context-updater")
 # set before import
 os.environ["IS_MCP_CONTEXT_UPDATER_TEST"] = "true"
 
-import pytest
-from pytest_asyncio import fixture
 from tools.memory_tools import (
     store_memory,
     retrieve_memory,

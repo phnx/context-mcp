@@ -1,0 +1,46 @@
+name: CI/CD for MCP Context Server
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install pipenv
+        run: pip install pipenv
+
+      - name: Install dev dependencies
+        run: pipenv install --dev
+
+      - name: Run pytest
+        run: pipenv run pytest test/test_server.py -v -s
+
+  deploy:
+    name: Deploy to Render
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Trigger MCP Server deploy
+        run: curl -X POST "$RENDER_DEPLOY_HOOK_MCP_SERVER"
+        env:
+          RENDER_DEPLOY_HOOK_MCP_SERVER: ${{ secrets.RENDER_DEPLOY_HOOK_MCP_SERVER }}
+
+      # - name: Trigger Web Client deploy
+      #   run: curl -X POST "$RENDER_DEPLOY_HOOK_WEB_CLIENT"
+      #   env:
+      #     RENDER_DEPLOY_HOOK_WEB_CLIENT: ${{ secrets.RENDER_DEPLOY_HOOK_WEB_CLIENT }}

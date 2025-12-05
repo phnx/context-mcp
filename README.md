@@ -31,7 +31,7 @@ On the analytic side, the application summarizes tool usage statistics to suppor
 - Single page application using vanilla JS
 - Python API gateway for MCP & LLM API
 - Containerized and deployable
-- *Alternative*: heavier frontend JS frameworks as a one-stop solution to connect with LLM and MCP, which also requires its own deployment process & secret management, hence falling back to 
+- *Alternative*: heavier frontend JS frameworks as a one-stop solution to connect with LLM and MCP, which also requires its own deployment process & secret management, hence falling back to simple client-gateway solution
 
 ![web-client](./assets/web-client.png)
 
