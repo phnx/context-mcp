@@ -14,25 +14,22 @@ Keeping track of active tasks & statuses
 - simple web client interface
 - dockerize web-client
 - mcp usage analytics: tool calls, consumed tokens
-
-
-## TODO
-
 - deployment plan
     - mcp server as container -> for persistent connection with llm api
     - website frontend deployment
     - cli client - no deployment
 
 
+## TODO
+
+
 - demo scenario - auto replay question set - playwright
 - refactor & optimize
-- document design decision
+- document design decision - system diagram
 
 
 - guardrail - sensitive content
-- replace OpenAI client with more unified interface & adapter
-
-
+- replace OpenAI client with unified LLM API interface & adapter
 
 
 
