@@ -1,0 +1,142 @@
+{
+  "bob": {
+    "user_id": "bob",
+    "memories": {
+      "master_degree_location": {
+        "key": "master_degree_location",
+        "value": "Syracuse University, New York",
+        "created_at": "2025-12-04T00:16:01.478965",
+        "updated_at": "2025-12-04T00:16:01.478942"
+      },
+      "favorite_activities_upstate": {
+        "key": "favorite_activities_upstate",
+        "value": "Exploring Syracuse University, Finger Lakes region, Niagara Falls, Thousand Islands",
+        "created_at": "2025-12-04T00:31:14.044316",
+        "updated_at": "2025-12-04T00:31:14.044143"
+      },
+      "canada_visa_notes": {
+        "key": "canada_visa_notes",
+        "value": "Visa requirements for visiting Canada from the U.S. include checking if a visa or eTA is needed, applying in advance, being aware of COVID-19 regulations, and checking duration of stay.",
+        "created_at": "2025-12-04T00:32:49.386205",
+        "updated_at": "2025-12-04T00:32:49.386199"
+      },
+      "visa_application": {
+        "key": "visa_application",
+        "value": "needs to apply for a new Europe visa",
+        "created_at": "2025-12-04T00:56:37.036941",
+        "updated_at": "2025-12-04T00:56:37.036920"
+      },
+      "pet": {
+        "key": "pet",
+        "value": "cat",
+        "created_at": "2025-12-04T01:39:15.102786",
+        "updated_at": "2025-12-04T01:39:15.102664"
+      },
+      "possible_trip_chonburi": {
+        "key": "possible_trip_chonburi",
+        "value": "no longer going",
+        "created_at": "2025-12-04T07:36:59.203513",
+        "updated_at": "2025-12-04T14:32:24.009604"
+      },
+      "possible_trip_kanchanaburi": {
+        "key": "possible_trip_kanchanaburi",
+        "value": "on December 30",
+        "created_at": "2025-12-04T14:32:24.081515",
+        "updated_at": "2025-12-04T14:32:24.081257"
+      },
+      "birthplace": {
+        "key": "birthplace",
+        "value": "Suratthani",
+        "created_at": "2025-12-04T16:33:53.259879",
+        "updated_at": "2025-12-04T16:33:53.259852"
+      }
+    },
+    "travel_preferences": {
+      "dream_destination": {
+        "key": "dream_destination",
+        "value": "upstate New York",
+        "values": null,
+        "min_value": null,
+        "max_value": null,
+        "description": "A future visit to upstate New York, where I did my master's degree at Syracuse University.",
+        "created_at": "2025-12-04T00:16:01.449242",
+        "updated_at": "2025-12-04T00:16:01.449242"
+      },
+      "recommended_activities": {
+        "key": "recommended_activities",
+        "value": null,
+        "values": [
+          "Exploring Syracuse University",
+          "Visiting the Finger Lakes region",
+          "Traveling to Niagara Falls",
+          "Discovering the Thousand Islands"
+        ],
+        "min_value": null,
+        "max_value": null,
+        "description": null,
+        "created_at": "2025-12-04T00:31:14.019412",
+        "updated_at": "2025-12-04T00:31:14.019412"
+      },
+      "niagara_falls_budget": {
+        "key": "niagara_falls_budget",
+        "value": null,
+        "values": null,
+        "min_value": 100.0,
+        "max_value": 200.0,
+        "description": "Budget for a night at Niagara Falls.",
+        "created_at": "2025-12-04T00:32:04.681561",
+        "updated_at": "2025-12-04T00:32:04.681561"
+      },
+      "canada_visa_information": {
+        "key": "canada_visa_information",
+        "value": null,
+        "values": null,
+        "min_value": null,
+        "max_value": null,
+        "description": "Information about visa requirements for visiting Canada from the U.S., including checking visa requirements, application process, COVID-19 regulations, and duration of stay.",
+        "created_at": "2025-12-04T00:32:49.365453",
+        "updated_at": "2025-12-04T00:32:49.365453"
+      },
+      "trip_to_japan": {
+        "key": "trip_to_japan",
+        "value": null,
+        "values": null,
+        "min_value": null,
+        "max_value": null,
+        "description": "Planned trip to Japan on a minimum budget with the following suggestions: Visit Tokyo, Kyoto, Osaka, and Hiroshima; stay in hostels or capsule hotels; use public transportation and a rail pass; eat at convenience stores and local markets; enjoy free activities in parks and cultural experiences.",
+        "created_at": "2025-12-04T16:35:13.919852",
+        "updated_at": "2025-12-04T16:35:13.919852"
+      },
+      "trip_to_japan_budget": {
+        "key": "trip_to_japan_budget",
+        "value": "Under $100 a day",
+        "values": null,
+        "min_value": null,
+        "max_value": null,
+        "description": "Plan for the trip to Japan to keep the daily budget under $100.",
+        "created_at": "2025-12-04T16:35:37.148572",
+        "updated_at": "2025-12-04T16:35:37.148572"
+      },
+      "trip_to_japan_budget_allocation": {
+        "key": "trip_to_japan_budget_allocation",
+        "value": "$80-$100",
+        "values": null,
+        "min_value": null,
+        "max_value": null,
+        "description": "Daily budget allocation for trip to Japan: Accommodation $30-$50, Meals $20-$30, Transportation $10-$15, Activities $10-$15.",
+        "created_at": "2025-12-04T16:36:51.305026",
+        "updated_at": "2025-12-04T16:36:51.305026"
+      },
+      "trip_to_japan_sample_day": {
+        "key": "trip_to_japan_sample_day",
+        "value": null,
+        "values": null,
+        "min_value": null,
+        "max_value": null,
+        "description": "Example budget for a day: $35 accommodation, $25 meals, $10 transportation, $10 activities, total $80.",
+        "created_at": "2025-12-04T16:36:51.340991",
+        "updated_at": "2025-12-04T16:36:51.340991"
+      }
+    }
+  }
+}

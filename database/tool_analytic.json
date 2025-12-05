@@ -1,0 +1,27 @@
+{
+  "retrieve_memory": {
+    "calls": 3,
+    "tokens_in": 28,
+    "tokens_out": 170
+  },
+  "retrieve_travel_preference": {
+    "calls": 3,
+    "tokens_in": 24,
+    "tokens_out": 412
+  },
+  "store_memory": {
+    "calls": 2,
+    "tokens_in": 35,
+    "tokens_out": 103
+  },
+  "store_travel_preference": {
+    "calls": 5,
+    "tokens_in": 193,
+    "tokens_out": 555
+  },
+  "update_travel_preference": {
+    "calls": 3,
+    "tokens_in": 89,
+    "tokens_out": 317
+  }
+}

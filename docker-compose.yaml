@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  context-mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: mcp-server
+    image: context-mcp-server:latest
+    container_name: context-mcp-server
+    ports:
+      - "0.0.0.0:8000:8000"
+    volumes:
+      - ./database:/app/database
+      - ./src:/app/src
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - app-network
+
+  context-web-client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web-client
+    image: context-web-client:latest
+    container_name: context-web-client
+    ports:
+      - "0.0.0.0:8001:8001"
+    volumes:
+      - ./src:/app/src
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MCP_SERVER_URL=http://host.docker.internal:8000/mcp
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
