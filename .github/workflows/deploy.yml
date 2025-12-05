@@ -1,5 +1,5 @@
 name: CI/CD for MCP Context Server
-
+run-name: "Test and deploy to Render"
 on:
   push:
     branches: ["main"]
@@ -23,7 +23,7 @@ jobs:
         run: pip install --no-cache-dir -r requirements.txt
 
       - name: Run pytest
-        run: pipenv run pytest test/test_server.py -v -s
+        run: pytest test/test_server.py -v -s
 
   # do not use deploy on commit - use github action to complete test before deploy
   deploy:
