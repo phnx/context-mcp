@@ -4,8 +4,9 @@ import json
 import logging
 import os
 import sys
+import time
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -32,6 +33,30 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+rate_limit = {}
+MAX_CALLS = 10
+WINDOW = 60  # seconds
+
+
+@app.middleware("http")
+async def simple_rate_limit(request: Request, call_next):
+    ip = request.client.host
+    now = time.time()
+
+    if ip not in rate_limit:
+        rate_limit[ip] = []
+
+    # Remove old timestamps
+    rate_limit[ip] = [t for t in rate_limit[ip] if now - t < WINDOW]
+
+    if len(rate_limit[ip]) >= MAX_CALLS:
+        raise HTTPException(status_code=429, detail="Too Many Requests")
+
+    rate_limit[ip].append(now)
+
+    return await call_next(request)
+
 
 # Store conversations
 # NOTE this should be moved to in-memory database for performance
