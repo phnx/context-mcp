@@ -152,6 +152,25 @@ RUN_LLM_TESTS=true pytest tests/test_llm.py -v -s
 RUN_LLM_TESTS=true pytest test/test_llm.py::TestLLMRealHallucination::test_llm_stores_and_retrieves_memory -v -s
 ```
 
+### End-to-End Test Scenario
+Run [Puppeteer](https://pptr.dev/) to test a chat scenario visually.
+
+```bash
+# check pre-dependency Node.js ≥ 18 & npm
+node -v
+npm -v
+
+# install Puppeteer with its own bundled Chromium
+npm install puppeteer
+```
+
+Start testing scenario. This command opens a test browser and runs the following scenario
+```bash
+node puppeteer-runner.js <scenario_name>
+```
+
+
+
 ## Limitations and Future Work
 
 There are several pending tasks on [TODOs](TASKLIST.md).
