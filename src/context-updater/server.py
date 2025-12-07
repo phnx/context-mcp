@@ -5,7 +5,7 @@ from fastmcp import FastMCP
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from server_database import get_database_overview, load_database
+from server_database import get_database_overview, get_all_users
 from tools import register_all_tools
 
 
@@ -23,12 +23,24 @@ register_all_tools(mcp)
 
 @mcp.tool()
 def list_users() -> dict:
-    database = load_database()
+    """
+    List anonymous users with their memory and travel preference counts.
+    """
+    users_data = (
+        get_all_users()
+    )  # returns dict[user_id] = {"memory_count": int, "travel_pref_count": int}
+
     users = [
-        {"user_id": "NA", "memory_count": len(user_data.memories)}
-        for _, user_data in database.items()
+        {
+            "user_id": "NA",
+            "memory_count": data.get("memory_count", 0),
+            "travel_pref_count": data.get("travel_pref_count", 0),
+        }
+        for _, data in users_data.items()
     ]
+
     logger.debug("tool calling: list_users")
+
     return {
         "status": "success",
         "total_users": len(users),

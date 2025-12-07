@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from utils.sanitization import sanitize_user_id
 from client_core import MemoryConversation
 from llm_client import LLMClient, OpenAIAdapter
+from utils.tool_analytic import ToolCounter
 
 # Initialize LLM client
 llm_client: LLMClient = OpenAIAdapter(
@@ -135,21 +136,14 @@ async def health_check():
 
 @app.get("/api/analytics")
 async def get_analytics():
-    """Read and serve analytics data from JSON file"""
+    """Read and serve analytics data from tool counter database"""
     try:
-        json_path = "database/tool_analytic.json"
-
-        if not os.path.exists(json_path):
-            raise HTTPException(status_code=404, detail="Analytics file not found")
-
-        with open(json_path, "r") as f:
-            data = json.load(f)
-
+        counter = ToolCounter()
+        data = counter.get_all_stats()
         return data
 
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="Invalid JSON format")
     except Exception as e:
+        logger.exception("Failed to get analytics")
         raise HTTPException(status_code=500, detail=str(e))
 
 

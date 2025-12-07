@@ -1,45 +1,26 @@
 """
-mcp tools for memory operations
+MCP tools for memory operations (SQLite backend)
 """
 
 import logging
 from datetime import datetime
 
-from server_database import load_database, save_database
-from server_datamodels import UserMemories, Memory
+from server_database import (
+    store_memory as db_store_memory,
+    get_memories as db_get_memories,
+    update_memory as db_update_memory,
+    delete_memory as db_delete_memory,
+)
+from server_datamodels import Memory
 
 logger = logging.getLogger(__name__)
 
 
 async def store_memory(user_id: str, key: str, value: str) -> dict:
-    """
-    Store general-purpose memories about the user (name, occupation, interests, etc).
-    Use this for personal information that is NOT travel-related.
-
-    Args:
-        user_id: Unique identifier for the user
-        key: Memory key (e.g., 'favourite_color', 'name')
-        value: Memory value (string)
-
-    Returns:
-        Success message with memory details
-    """
-    database = load_database()
-
-    if user_id not in database:
-        database[user_id] = UserMemories(user_id=user_id)
-
+    """Store a general-purpose memory for a user."""
     now = datetime.now().isoformat()
-    database[user_id].memories[key] = Memory(
-        key=key,
-        value=value,
-        created_at=database[user_id]
-        .memories.get(key, Memory(key=key, value=value))
-        .created_at,
-        updated_at=now,
-    )
-
-    save_database(database)
+    memory = Memory(key=key, value=value, created_at=now, updated_at=now)
+    db_store_memory(user_id, memory)
 
     logger.debug("tool calling: store_memory")
 
@@ -53,28 +34,18 @@ async def store_memory(user_id: str, key: str, value: str) -> dict:
 
 
 async def retrieve_memory(user_id: str, key: str = None) -> dict:
-    """
-    Retrieve a specific memory or all memories for a user.
-
-    Args:
-        user_id: Unique identifier for the user
-        key: Optional memory key. If not provided, returns all memories
-
-    Returns:
-        Memory or list of memories
-    """
-    database = load_database()
-
+    """Retrieve a specific memory or all memories for a user."""
     logger.debug("tool calling: retrieve_memory")
 
-    if user_id not in database:
+    memories = db_get_memories(user_id)
+
+    if not memories:
         return {"status": "not_found", "message": f"User {user_id} not found"}
 
     if key:
-        if key not in database[user_id].memories:
+        if key not in memories:
             return {"status": "not_found", "message": f"Memory key '{key}' not found"}
-
-        memory = database[user_id].memories[key]
+        memory = memories[key]
         return {
             "status": "success",
             "key": key,
@@ -84,47 +55,26 @@ async def retrieve_memory(user_id: str, key: str = None) -> dict:
         }
 
     # Return all memories
-    memories = {
-        k: {
-            "value": v.value,
-            "created_at": v.created_at,
-            "updated_at": v.updated_at,
-        }
-        for k, v in database[user_id].memories.items()
+    all_memories = {
+        k: {"value": v.value, "created_at": v.created_at, "updated_at": v.updated_at}
+        for k, v in memories.items()
     }
-
-    return {
-        "status": "success",
-        "count": len(memories),
-        "memories": memories,
-    }
+    return {"status": "success", "count": len(all_memories), "memories": all_memories}
 
 
 async def update_memory(user_id: str, key: str, value: str) -> dict:
-    """
-    Update an existing memory.
-
-    Args:
-        user_id: Unique identifier for the user
-        key: Memory key to update
-        value: New memory value
-
-    Returns:
-        Updated memory details
-    """
-    database = load_database()
-
+    """Update an existing memory for a user."""
     logger.debug("tool calling: update_memory")
 
-    if user_id not in database or key not in database[user_id].memories:
+    memories = db_get_memories(user_id)
+    if key not in memories:
         return {"status": "error", "message": f"Memory key '{key}' does not exist"}
 
     now = datetime.now().isoformat()
-    memory = database[user_id].memories[key]
+    memory = memories[key]
     memory.value = value
     memory.updated_at = now
-
-    save_database(database)
+    db_update_memory(user_id, memory)
 
     return {
         "status": "success",
@@ -135,24 +85,12 @@ async def update_memory(user_id: str, key: str, value: str) -> dict:
 
 
 async def delete_memory(user_id: str, key: str) -> dict:
-    """
-    Delete a memory.
-
-    Args:
-        user_id: Unique identifier for the user
-        key: Memory key to delete
-
-    Returns:
-        Success or error message
-    """
-    database = load_database()
-
+    """Delete a memory for a user."""
     logger.debug("tool calling: delete_memory")
 
-    if user_id not in database or key not in database[user_id].memories:
+    memories = db_get_memories(user_id)
+    if key not in memories:
         return {"status": "error", "message": f"Memory key '{key}' not found"}
 
-    del database[user_id].memories[key]
-    save_database(database)
-
+    db_delete_memory(user_id, key)
     return {"status": "success", "message": f"Memory '{key}' deleted"}

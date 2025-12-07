@@ -1,114 +1,93 @@
-# independent counter class for tool usage
-import json
+# independent counter class for tool usage using SQLite
+import sqlite3
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict
 
-from filelock import FileLock
-
-COUNTER_FILE = "database/tool_analytic.json"
+DB_FILE = Path("database/tool_analytic.db")
 
 
 class ToolCounter:
-    """Thread-safe counter with file locking."""
+    """Thread-safe tool usage counter using SQLite."""
 
     def __init__(self):
-        """
-        Initialize counter.
+        """Initialize SQLite database and table."""
+        self.db_file = DB_FILE
+        self._ensure_table_exists()
 
-        Args:
-            json_file: Path to JSON counter file
-        """
-        self.json_file = Path(COUNTER_FILE)
-        self.lock_file = Path(f"{COUNTER_FILE}.lock")
-        self._ensure_file_exists()
+    def _get_conn(self):
+        conn = sqlite3.connect(self.db_file)
+        conn.row_factory = sqlite3.Row
+        return conn
 
-    def _ensure_file_exists(self) -> None:
-        """Create JSON file if it doesn't exist."""
-        if not self.json_file.exists():
-            self.json_file.write_text(json.dumps({}))
-
-    def _read(self) -> Dict[str, Any]:
-        """Read JSON file safely."""
-        try:
-            return json.loads(self.json_file.read_text())
-        except (json.JSONDecodeError, FileNotFoundError):
-            return {}
-
-    def _write(self, data: Dict[str, Any]) -> None:
-        """Write JSON file atomically."""
-        temp_file = Path(f"{self.json_file}.tmp")
-        temp_file.write_text(json.dumps(data, indent=2))
-        temp_file.replace(self.json_file)
+    def _ensure_table_exists(self):
+        with self._get_conn() as conn:
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS tool_stats (
+                    tool_name TEXT PRIMARY KEY,
+                    calls INTEGER DEFAULT 0,
+                    tokens_in INTEGER DEFAULT 0,
+                    tokens_out INTEGER DEFAULT 0
+                )
+                """
+            )
 
     def increment_tool(
         self, tool_name: str, calls: int = 1, tokens_in: int = 0, tokens_out: int = 0
     ) -> Dict[str, int]:
-        """
-        Increment tool call count and tokens.
-
-        Args:
-            tool_name: Name of the tool
-            calls: Number of calls to add (default: 1)
-            tokens_in: Input tokens to add
-            tokens_out: Output tokens to add
-
-        Returns:
-            Updated tool stats
-        """
-        lock = FileLock(str(self.lock_file), timeout=10)
-
-        with lock:
-            data = self._read()
-
-            # Initialize tool if not exists
-            if tool_name not in data:
-                data[tool_name] = {
-                    "calls": 0,
-                    "tokens_in": 0,
-                    "tokens_out": 0,
-                }
-
-            # Increment values
-            data[tool_name]["calls"] += calls
-            data[tool_name]["tokens_in"] += tokens_in
-            data[tool_name]["tokens_out"] += tokens_out
-
-            self._write(data)
-
-            return data[tool_name]
+        """Increment tool call count and tokens."""
+        with self._get_conn() as conn:
+            conn.execute(
+                """
+                INSERT INTO tool_stats(tool_name, calls, tokens_in, tokens_out)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(tool_name) DO UPDATE SET
+                    calls = calls + excluded.calls,
+                    tokens_in = tokens_in + excluded.tokens_in,
+                    tokens_out = tokens_out + excluded.tokens_out
+                """,
+                (tool_name, calls, tokens_in, tokens_out),
+            )
+            cursor = conn.execute(
+                "SELECT calls, tokens_in, tokens_out FROM tool_stats WHERE tool_name = ?",
+                (tool_name,),
+            )
+            row = cursor.fetchone()
+            return dict(row)
 
     def get_tool_stats(self, tool_name: str) -> Dict[str, int]:
         """Get stats for a specific tool."""
-        lock = FileLock(str(self.lock_file), timeout=10)
-
-        with lock:
-            data = self._read()
-            return data.get(
-                tool_name,
-                {
-                    "calls": 0,
-                    "tokens_in": 0,
-                    "tokens_out": 0,
-                },
+        with self._get_conn() as conn:
+            cursor = conn.execute(
+                "SELECT calls, tokens_in, tokens_out FROM tool_stats WHERE tool_name = ?",
+                (tool_name,),
             )
+            row = cursor.fetchone()
+            if row:
+                return dict(row)
+            return {"calls": 0, "tokens_in": 0, "tokens_out": 0}
 
     def get_all_stats(self) -> Dict[str, Dict[str, int]]:
         """Get stats for all tools."""
-        lock = FileLock(str(self.lock_file), timeout=10)
-
-        with lock:
-            return self._read()
+        with self._get_conn() as conn:
+            cursor = conn.execute("SELECT * FROM tool_stats")
+            return {
+                row["tool_name"]: {
+                    "calls": row["calls"],
+                    "tokens_in": row["tokens_in"],
+                    "tokens_out": row["tokens_out"],
+                }
+                for row in cursor.fetchall()
+            }
 
     def reset_tool(self, tool_name: str) -> None:
         """Reset stats for a tool."""
-        lock = FileLock(str(self.lock_file), timeout=10)
-
-        with lock:
-            data = self._read()
-            if tool_name in data:
-                data[tool_name] = {
-                    "calls": 0,
-                    "tokens_in": 0,
-                    "tokens_out": 0,
-                }
-                self._write(data)
+        with self._get_conn() as conn:
+            conn.execute(
+                """
+                INSERT INTO tool_stats(tool_name, calls, tokens_in, tokens_out)
+                VALUES (?, 0, 0, 0)
+                ON CONFLICT(tool_name) DO UPDATE SET calls=0, tokens_in=0, tokens_out=0
+                """,
+                (tool_name,),
+            )

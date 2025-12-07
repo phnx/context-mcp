@@ -4,7 +4,6 @@ import os
 from typing import Optional
 
 from fastmcp import Client, FastMCP
-from openai import OpenAI
 from llm_client import LLMClient, OpenAIAdapter
 
 from utils.sanitization import sanitize_tool_input, sanitize_user_message

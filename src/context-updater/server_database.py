@@ -1,138 +1,228 @@
-import json
 import os
+import sqlite3
+import json
 from pathlib import Path
+from typing import Any
 
-from filelock import FileLock
 from server_datamodels import UserMemories, Memory, TravelPreference
 
-# Database file path
-DB_FILE = Path("database/memories.json")
-DB_LOCK_FILE = Path("database/memories.json.lock")
-
-# Test database file path
-TEST_DB_FILE = Path("test/test_memories.json")
-TEST_DB_LOCK_FILE = Path("test/test_memories.json.lock")
-
-# Check env vars for test environment
+# Database paths
+DB_FILE = Path("database/memories.db")
+TEST_DB_FILE = Path("test/test_memories.db")
 is_test = os.environ.get("IS_MCP_CONTEXT_UPDATER_TEST", "false").lower() == "true"
 
-# ============================================================================
-# Helper Functions
-# ============================================================================
+
+def _get_db_path() -> Path:
+    return TEST_DB_FILE if is_test else DB_FILE
 
 
-def _get_db_paths() -> tuple[Path, Path]:
-    """Get database and lock file paths based on environment."""
-    if is_test:
-        return TEST_DB_FILE, TEST_DB_LOCK_FILE
-    else:
-        return DB_FILE, DB_LOCK_FILE
-
-
-def _ensure_db_file_exists(db_path: Path) -> None:
-    """Ensure database file and directory exist."""
+def _get_connection() -> sqlite3.Connection:
+    """Return SQLite connection and ensure tables exist."""
+    db_path = _get_db_path()
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    if not db_path.exists():
-        db_path.write_text(json.dumps({}))
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+
+    with conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS memories (
+                user_id TEXT,
+                key TEXT,
+                content TEXT,
+                PRIMARY KEY (user_id, key)
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS travel_preferences (
+                user_id TEXT,
+                key TEXT,
+                content TEXT,
+                PRIMARY KEY (user_id, key)
+            )
+            """
+        )
+    return conn
 
 
-# ============================================================================
-# Database Operations
-# ============================================================================
+# ==========================
+# Memory CRUD Operations
+# ==========================
 
 
-def load_database() -> dict[str, UserMemories]:
-    """Load all memories from JSON file (thread-safe)."""
-    db_path, lock_path = _get_db_paths()
-    _ensure_db_file_exists(db_path)
-
-    lock = FileLock(str(lock_path), timeout=10)
-
-    try:
-        with lock:
-            with open(db_path, "r") as f:
-                data = json.load(f)
-
-            return {
-                user_id: UserMemories(
-                    user_id=user_id,
-                    memories={
-                        k: Memory(**v) for k, v in user_data.get("memories", {}).items()
-                    },
-                    travel_preferences={
-                        k: TravelPreference(**v)
-                        for k, v in user_data.get("travel_preferences", {}).items()
-                    },
-                )
-                for user_id, user_data in data.items()
-            }
-    except (json.JSONDecodeError, ValueError):
-        return {}
+def store_memory(user_id: str, memory: Memory) -> None:
+    conn = _get_connection()
+    with conn:
+        conn.execute(
+            """
+            INSERT INTO memories (user_id, key, content)
+            VALUES (?, ?, ?)
+            ON CONFLICT(user_id, key) DO UPDATE SET content=excluded.content
+            """,
+            (user_id, memory.key, memory.model_dump_json()),
+        )
+    conn.close()
 
 
-def save_database(database: dict[str, UserMemories]) -> None:
-    """Save all memories to JSON file (thread-safe)."""
-    db_path, lock_path = _get_db_paths()
-    _ensure_db_file_exists(db_path)
-
-    lock = FileLock(str(lock_path), timeout=10)
-
-    with lock:
-        data = {
-            user_id: {
-                "user_id": user_id,
-                "memories": {k: v.model_dump() for k, v in user_data.memories.items()},
-                "travel_preferences": {
-                    k: v.model_dump() for k, v in user_data.travel_preferences.items()
-                },
-            }
-            for user_id, user_data in database.items()
-        }
-
-        # Write atomically using temp file
-        temp_file = db_path.with_suffix(".json.tmp")
-        with open(temp_file, "w") as f:
-            json.dump(data, f, indent=2)
-        temp_file.replace(db_path)
+def get_memories(user_id: str) -> dict[str, Memory]:
+    conn = _get_connection()
+    rows = conn.execute(
+        "SELECT key, content FROM memories WHERE user_id = ?", (user_id,)
+    ).fetchall()
+    conn.close()
+    return {
+        row["key"]: Memory.model_validate(json.loads(row["content"])) for row in rows
+    }
 
 
-def get_database_overview() -> dict:
-    """
-    Return top-level overview of the database using loaded UserMemories.
+def update_memory(user_id: str, memory: Memory) -> None:
+    conn = _get_connection()
+    with conn:
+        conn.execute(
+            """
+            UPDATE memories
+            SET content = ?
+            WHERE user_id = ? AND key = ?
+            """,
+            (memory.model_dump_json(), user_id, memory.key),
+        )
+    conn.close()
 
-    Returns:
-        dict: {
-            "total_users": int,
-            "users": [
-                {
-                    "user_id_prefix": str,
-                    "travel_preferences_count": int,
-                    "memories_count": int
-                },
-                ...
-            ]
-        }
-    """
-    database = load_database()
 
-    users_overview = []
-    for user_id, user_data in database.items():
-        users_overview.append(
+def delete_memory(user_id: str, key: str) -> None:
+    conn = _get_connection()
+    with conn:
+        conn.execute(
+            "DELETE FROM memories WHERE user_id = ? AND key = ?", (user_id, key)
+        )
+    conn.close()
+
+
+# ==========================
+# Travel Preferences CRUD
+# ==========================
+
+
+def store_travel_preference(user_id: str, pref: TravelPreference) -> None:
+    conn = _get_connection()
+    with conn:
+        conn.execute(
+            """
+            INSERT INTO travel_preferences (user_id, key, content)
+            VALUES (?, ?, ?)
+            ON CONFLICT(user_id, key) DO UPDATE SET content=excluded.content
+            """,
+            (user_id, pref.key, pref.model_dump_json()),
+        )
+    conn.close()
+
+
+def get_travel_preferences(user_id: str) -> dict[str, TravelPreference]:
+    conn = _get_connection()
+    rows = conn.execute(
+        "SELECT key, content FROM travel_preferences WHERE user_id = ?", (user_id,)
+    ).fetchall()
+    conn.close()
+    return {
+        row["key"]: TravelPreference.model_validate(json.loads(row["content"]))
+        for row in rows
+    }
+
+
+def update_travel_preference(user_id: str, pref: TravelPreference) -> None:
+    conn = _get_connection()
+    with conn:
+        conn.execute(
+            """
+            UPDATE travel_preferences
+            SET content = ?
+            WHERE user_id = ? AND key = ?
+            """,
+            (pref.model_dump_json(), user_id, pref.key),
+        )
+    conn.close()
+
+
+def delete_travel_preference(user_id: str, key: str) -> None:
+    conn = _get_connection()
+    with conn:
+        conn.execute(
+            "DELETE FROM travel_preferences WHERE user_id = ? AND key = ?",
+            (user_id, key),
+        )
+    conn.close()
+
+
+# ==========================
+# Database Overview
+# ==========================
+
+
+def get_database_overview() -> dict[str, Any]:
+    """Return top-level overview: total users + counts per user."""
+    conn = _get_connection()
+    users = set(
+        row["user_id"]
+        for row in conn.execute(
+            "SELECT user_id FROM memories UNION SELECT user_id FROM travel_preferences"
+        ).fetchall()
+    )
+    overview = []
+    for user_id in users:
+        memories_count = conn.execute(
+            "SELECT COUNT(*) FROM memories WHERE user_id = ?", (user_id,)
+        ).fetchone()[0]
+        prefs_count = conn.execute(
+            "SELECT COUNT(*) FROM travel_preferences WHERE user_id = ?", (user_id,)
+        ).fetchone()[0]
+        overview.append(
             {
-                "user_id_prefix": f"{user_id[:2]}...",  # first 2 letters
-                "travel_preferences_count": len(user_data.travel_preferences),
-                "memories_count": len(user_data.memories),
+                "user_id_prefix": f"{user_id[:3]}...",
+                "memories_count": memories_count,
+                "travel_preferences_count": prefs_count,
             }
         )
+    conn.close()
+    return {"total_users": len(users), "users": overview}
 
-    return {"total_users": len(users_overview), "users": users_overview}
 
+def get_all_users() -> dict:
+    """
+    Returns all users with their memory and travel preference counts.
+    Output:
+        {
+            "user1": {"memory_count": 5, "travel_pref_count": 3},
+            "user2": {"memory_count": 2, "travel_pref_count": 0},
+        }
+    """
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
 
-def get_user_memories(user_id: str) -> UserMemories:
-    """Get or create user memories"""
-    database = load_database()
-    if user_id not in database:
-        database[user_id] = UserMemories(user_id=user_id)
-        save_database(database)
+    # Count memories per user
+    cursor.execute(
+        "SELECT user_id, COUNT(*) as memory_count FROM memories GROUP BY user_id"
+    )
+    memory_counts = {row["user_id"]: row["memory_count"] for row in cursor.fetchall()}
 
-    return database[user_id]
+    # Count travel preferences per user
+    cursor.execute(
+        "SELECT user_id, COUNT(*) as travel_pref_count FROM travel_preferences GROUP BY user_id"
+    )
+    pref_counts = {
+        row["user_id"]: row["travel_pref_count"] for row in cursor.fetchall()
+    }
+
+    # Combine results
+    all_users = {}
+    user_ids = set(memory_counts) | set(pref_counts)
+    for uid in user_ids:
+        all_users[uid] = {
+            "memory_count": memory_counts.get(uid, 0),
+            "travel_pref_count": pref_counts.get(uid, 0),
+        }
+
+    conn.close()
+    return all_users

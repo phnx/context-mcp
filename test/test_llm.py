@@ -10,10 +10,12 @@ from pathlib import Path
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src" / "context-updater"))
+from llm_client import LLMClient, OpenAIAdapter
 
 # Set LLM Client
-api_key = os.getenv("OPENAI_API_KEY")
-llm_client = OpenAI(api_key=api_key)
+llm_client: LLMClient = OpenAIAdapter(
+    model=os.getenv("OPENAI_MODEL"), api_key=os.getenv("OPENAI_API_KEY")
+)
 
 from client_core import MemoryConversation
 
@@ -24,8 +26,7 @@ pytestmark = pytest.mark.skipif(
     reason="Skipped by default (costs money). Set RUN_LLM_TESTS=true to run",
 )
 
-TEST_DB_FILE = Path("test/test_memories.json")
-TEST_DB_LOCK_FILE = Path("test/test_memories.json.lock")
+TEST_DB_FILE = Path("test/test_memories.db")
 
 
 @pytest.fixture
@@ -39,9 +40,6 @@ def setup_llm_test_env():
     # Remove test database file
     if TEST_DB_FILE.exists():
         TEST_DB_FILE.unlink()
-
-        if TEST_DB_LOCK_FILE.exists():
-            TEST_DB_LOCK_FILE.unlink()
 
         print("✓ Test database cleaned up")
 
@@ -58,8 +56,6 @@ def setup_llm_test_env():
     if TEST_DB_FILE.exists():
         TEST_DB_FILE.unlink()
 
-        if TEST_DB_LOCK_FILE.exists():
-            TEST_DB_LOCK_FILE.unlink()
         print("✓ Test database cleaned up")
 
 
@@ -69,16 +65,10 @@ def cleanup_test_db():
     if TEST_DB_FILE.exists():
         TEST_DB_FILE.unlink()
 
-        if TEST_DB_LOCK_FILE.exists():
-            TEST_DB_LOCK_FILE.unlink()
-
     yield
 
     if TEST_DB_FILE.exists():
         TEST_DB_FILE.unlink()
-
-        if TEST_DB_LOCK_FILE.exists():
-            TEST_DB_LOCK_FILE.unlink()
 
 
 class TestLLMRealHallucination:
@@ -90,7 +80,7 @@ class TestLLMRealHallucination:
 
         # Tell LLM to store information
         response = conversation.chat(
-            "My name is Alice and I work as a software engineer"
+            "My name is Alice and I work as a software engineer. You should remember that."
         )
         assert response  # Should get a response
 

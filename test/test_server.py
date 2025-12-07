@@ -26,8 +26,7 @@ from tools.travel_preference_tools import (
 )
 
 # Test database file path
-TEST_DB_FILE = Path("test/test_memories.json")
-TEST_DB_LOCK_FILE = Path("test/test_memories.json.lock")
+TEST_DB_FILE = Path("test/test_memories.db")
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -35,9 +34,6 @@ def set_test_env():
     # Remove test database file
     if TEST_DB_FILE.exists():
         TEST_DB_FILE.unlink()
-
-        if TEST_DB_LOCK_FILE.exists():
-            TEST_DB_LOCK_FILE.unlink()
 
         print("✓ Test database cleaned up")
 
@@ -54,9 +50,6 @@ def set_test_env():
     if TEST_DB_FILE.exists():
         TEST_DB_FILE.unlink()
 
-        if TEST_DB_LOCK_FILE.exists():
-            TEST_DB_LOCK_FILE.unlink()
-
         print("✓ Test database cleaned up")
 
 
@@ -65,15 +58,11 @@ def cleanup_test_db():
     """Clean test database before and after each test"""
     if TEST_DB_FILE.exists():
         TEST_DB_FILE.unlink()
-        if TEST_DB_LOCK_FILE.exists():
-            TEST_DB_LOCK_FILE.unlink()
 
     yield
 
     if TEST_DB_FILE.exists():
         TEST_DB_FILE.unlink()
-        if TEST_DB_LOCK_FILE.exists():
-            TEST_DB_LOCK_FILE.unlink()
 
 
 @pytest.fixture
