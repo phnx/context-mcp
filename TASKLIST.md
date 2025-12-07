@@ -19,7 +19,7 @@ Keeping track of active tasks & statuses
     - website frontend deployment as container
     - cli client - no deployment
 - unified LLM API interface & adapter
-
+- extra dummy tools: travel booking portal, flight booking
 
 ## TODO
 
@@ -29,7 +29,7 @@ Keeping track of active tasks & statuses
 
 - document design decision - system diagram
 
-- more dummy tools: travel booking portal, flight booking
+
 
 - refactor & optimize
 - guardrail - sensitive content

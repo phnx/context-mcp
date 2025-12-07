@@ -132,10 +132,12 @@ class MemoryConversation:
             system_prompt = f"""You are a helpful assistant with memory capabilities. 
 You can store and retrieve information about the user (ID: {user_id}).
 
-Start by looking up existing user information with retrieve_memory and retrieve_travel_preferences tools.
+When user wants to find flights or hotel rooms, use lookup_flights or lookup_hotels to find available services. 
+If user choose any items, use book_a_flight or book_a_hotel tools to book them.
+Once booking is completed, you MUST store booking information e.g., flight number, hotel reservation as travel preferences.
 
-When a user tells you something about travel preference, e.g., dream destination or favorite trips, use store_travel_preference tool to save it.
-When you need to recall user's travel preferences, use the retrieve_travel_preference tool.
+When a user tells you something about general travel preference, e.g., dream destination or favorite trips, use store_travel_preference tool to save it.
+When you need to recall user's travel preferences, use the retrieve_travel_preferences tool.
 
 When a user tells you something else about themselves, use the store_memory tool to save it.
 When you need to recall general information about the user, use the retrieve_memory tool.
@@ -184,6 +186,9 @@ Always be friendly and personable, referencing stored preferences and memories w
         # Process response
         assistant_message = response
 
+        # stop tool callings to prevent explosion
+        allowed_tool_calls = 20
+
         # Handle tool calls
         while assistant_message.tool_calls:
             # Add assistant's response to history
@@ -226,6 +231,11 @@ Always be friendly and personable, referencing stored preferences and memories w
                     tokens_out=tool_output_tokens,
                 )
 
+                allowed_tool_calls -= 1
+
+                if allowed_tool_calls == 0:
+                    break
+
             # Get next response from OpenAI
             response = self.llm_client.chat(
                 messages=[
@@ -237,6 +247,9 @@ Always be friendly and personable, referencing stored preferences and memories w
             )
 
             assistant_message = response
+
+            if allowed_tool_calls <= 0:
+                raise RuntimeError("Reached tool allowance limit")
 
         # Extract final text response
         final_response = assistant_message.content or "No response generated"

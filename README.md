@@ -15,6 +15,27 @@ On the analytic side, the application summarizes tool usage statistics to suppor
 - Unified datamodel and data storage for context memory
 - Containerized: more persistent, suitable for LLM integration than serverless deployment
 
+
+#### Tools
+- Travel Preferences
+    - store_travel_preference
+    - retrieve_travel_preference
+    - update_travel_preference
+    - delete_travel_preference
+
+- General Memories
+    - store_memory
+    - retrieve_memory
+    - update_memory
+    - delete_memory
+
+- External Tools
+    - lookup_flights
+    - lookup_hotels
+    - book_a_flight
+    - book_a_hotel
+
+
 ### MCP Client
 - Chat-based user interface, self-identification, individual context information
 - Lightweight server analytics - how has MCP server been utilized by the client? - macro statistics of tool usage
