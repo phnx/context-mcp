@@ -96,6 +96,38 @@ def save_database(database: dict[str, UserMemories]) -> None:
         temp_file.replace(db_path)
 
 
+def get_database_overview() -> dict:
+    """
+    Return top-level overview of the database using loaded UserMemories.
+
+    Returns:
+        dict: {
+            "total_users": int,
+            "users": [
+                {
+                    "user_id_prefix": str,
+                    "travel_preferences_count": int,
+                    "memories_count": int
+                },
+                ...
+            ]
+        }
+    """
+    database = load_database()
+
+    users_overview = []
+    for user_id, user_data in database.items():
+        users_overview.append(
+            {
+                "user_id_prefix": f"{user_id[:2]}...",  # first 2 letters
+                "travel_preferences_count": len(user_data.travel_preferences),
+                "memories_count": len(user_data.memories),
+            }
+        )
+
+    return {"total_users": len(users_overview), "users": users_overview}
+
+
 def get_user_memories(user_id: str) -> UserMemories:
     """Get or create user memories"""
     database = load_database()

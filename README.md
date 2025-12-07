@@ -127,6 +127,7 @@ python src/context-updater/web-client/web_gateway.py
 
 Either option should yield following endpoint URLs:
 - MCP - http://127.0.0.1:8000
+    - anonymous user overview - http://127.0.0.1:8000/user_overview
 - Web-Client - http://127.0.0.1:8001
 
 ## Tests

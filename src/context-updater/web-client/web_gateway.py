@@ -96,7 +96,8 @@ def create_conversation(user_id: str) -> MemoryConversation:
 async def chat(request: ChatRequest):
     """Send message and get response"""
     try:
-        user_id = sanitize_user_id(request.user_id)
+        user_id = sanitize_user_id(request.user_id).lower()
+
         # Create conversation in thread pool if needed
         if user_id not in conversations:
             conversations[user_id] = await asyncio.to_thread(

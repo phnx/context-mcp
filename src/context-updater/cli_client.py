@@ -28,7 +28,7 @@ def interactive_chat(user_id: str):
 
     conversation = MemoryConversation(
         llm_client=llm_client,
-        user_id=user_id,
+        user_id=user_id.lower(),
         debug_mode=debug_mode,
     )
 
