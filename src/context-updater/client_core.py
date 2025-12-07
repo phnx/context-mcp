@@ -5,6 +5,7 @@ from typing import Optional
 
 from fastmcp import Client, FastMCP
 from openai import OpenAI
+from llm_client import LLMClient, OpenAIAdapter
 
 from utils.sanitization import sanitize_tool_input, sanitize_user_message
 from utils.tool_analytic import ToolCounter
@@ -109,7 +110,7 @@ class MemoryConversation:
 
     def __init__(
         self,
-        llm_client: OpenAI,
+        llm_client: LLMClient,
         user_id: str,
         system_prompt: Optional[str] = None,
         debug_mode: bool = False,
@@ -141,7 +142,7 @@ When you need to recall general information about the user, use the retrieve_mem
 
 Delete data using delete_travel_preference and delete_memory ONLY upon user's request.
 
-Make sure the data of each user is CONFIDENTIAL to the owner.
+Make sure the data of each user is CONFIDENTIAL and PRIVATE to the owner. NEVER share any data of a user to other users.
 Always be friendly and personable, referencing stored preferences and memories when relevant."""
 
         self.system_prompt = system_prompt
@@ -171,8 +172,7 @@ Always be friendly and personable, referencing stored preferences and memories w
         self.conversation_history.append({"role": "user", "content": user_message})
 
         # Call OpenAI with tools
-        response = self.llm_client.chat.completions.create(
-            model=MODEL,
+        response = self.llm_client.chat(
             messages=[
                 {"role": "system", "content": self.system_prompt},
                 *self.conversation_history,
@@ -182,7 +182,7 @@ Always be friendly and personable, referencing stored preferences and memories w
         )
 
         # Process response
-        assistant_message = response.choices[0].message
+        assistant_message = response
 
         # Handle tool calls
         while assistant_message.tool_calls:
@@ -227,8 +227,7 @@ Always be friendly and personable, referencing stored preferences and memories w
                 )
 
             # Get next response from OpenAI
-            response = self.llm_client.chat.completions.create(
-                model=MODEL,
+            response = self.llm_client.chat(
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     *self.conversation_history,
@@ -237,7 +236,7 @@ Always be friendly and personable, referencing stored preferences and memories w
                 tool_choice="auto",
             )
 
-            assistant_message = response.choices[0].message
+            assistant_message = response
 
         # Extract final text response
         final_response = assistant_message.content or "No response generated"

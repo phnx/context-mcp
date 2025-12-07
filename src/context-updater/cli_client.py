@@ -5,10 +5,13 @@ from openai import OpenAI
 
 from utils.sanitization import sanitize_user_id
 from client_core import MemoryConversation
+from llm_client import LLMClient, OpenAIAdapter
 
 
-# Initialize OpenAI client
-llm_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Initialize LLM client
+llm_client: LLMClient = OpenAIAdapter(
+    model=os.getenv("OPENAI_MODEL"), api_key=os.getenv("OPENAI_API_KEY")
+)
 
 
 # ============================================================================

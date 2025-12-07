@@ -11,7 +11,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from openai import OpenAI
 
 
 # Add src to path for imports
@@ -19,9 +18,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from utils.sanitization import sanitize_user_id
 from client_core import MemoryConversation
+from llm_client import LLMClient, OpenAIAdapter
 
-# Initialize OpenAI client
-llm_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Initialize LLM client
+llm_client: LLMClient = OpenAIAdapter(
+    model=os.getenv("OPENAI_MODEL"), api_key=os.getenv("OPENAI_API_KEY")
+)
 
 # Configure logging to stderr
 logging.basicConfig(
