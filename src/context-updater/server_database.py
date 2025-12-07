@@ -179,7 +179,7 @@ def get_database_overview() -> dict[str, Any]:
         ).fetchone()[0]
         overview.append(
             {
-                "user_id_prefix": f"{user_id[:3]}...",
+                "user_id_prefix": f"{user_id[:2]}...",
                 "memories_count": memories_count,
                 "travel_preferences_count": prefs_count,
             }
