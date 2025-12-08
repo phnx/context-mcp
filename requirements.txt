@@ -1,6 +1,8 @@
 annotated-doc==0.0.4
 annotated-types==0.7.0
 anyio==4.12.0
+argon2-cffi==25.1.0
+argon2-cffi-bindings==25.1.0
 attrs==25.4.0
 Authlib==1.6.5
 beartype==0.22.8
@@ -36,6 +38,7 @@ mdurl==0.1.2
 openai==2.8.1
 openapi-pydantic==0.5.1
 packaging==25.0
+passlib==1.7.4
 pathable==0.4.4
 pathvalidate==3.3.1
 platformdirs==4.5.0

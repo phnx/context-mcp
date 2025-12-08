@@ -54,15 +54,15 @@ def list_users() -> dict:
 
 
 # observing user base, not exposing user data
-@mcp.custom_route("/user_overview", methods=["GET"])
-async def user_overview(request: Request) -> JSONResponse:
+@mcp.custom_route("/memory_overview", methods=["GET"])
+async def memory_overview(request: Request) -> JSONResponse:
 
     try:
-        user_overview = get_database_overview()
+        memory_overview = get_database_overview()
 
-        logger.debug("normal endpoint calling: user_overview")
+        logger.debug("normal endpoint calling: memory_overview")
 
-        return JSONResponse(user_overview, 200)
+        return JSONResponse(memory_overview, 200)
     except Exception:
         return JSONResponse({"status": "error fetching user overview"}, 500)
 

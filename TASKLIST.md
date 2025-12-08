@@ -4,7 +4,7 @@ Keeping track of active tasks & statuses
 ## DONE
 - test fastmcp connectivity
 - test openai & env keys
-- datamodel & primitive database
+- datamodel & json database
 - implement memory CRUD tools 
 - dockerize mcp server
 - unittest tools
@@ -21,7 +21,8 @@ Keeping track of active tasks & statuses
 - unified LLM API interface & adapter
 - extra dummy tools: travel booking portal, flight booking
 - demo scenario - auto question set end-to-end testing
-- switch to sqlite
+- replace json with sqlite
+- plain authentication at client level
 
 ## TODO
 
@@ -29,6 +30,5 @@ Keeping track of active tasks & statuses
 - keep deleting code - shaving this yak 🦙
 
 ## DISCONTINUED
-- authentication -> token-based authentication or more robust protocol e.g., OAuth
-- authorization -> restricted functions e.g., list user -> should be implemented after authentication & authorization
+- authorization -> restricted MCP functions e.g., list user -> needs role-based system
 - model performance test -> build set of difficult test cases, e.g., hard semantic similarity questions, to find best-performing models

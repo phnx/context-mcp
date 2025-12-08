@@ -29,7 +29,7 @@ On the analytic side, the application summarizes tool usage statistics to suppor
     - update_memory
     - delete_memory
 
-- External Tools
+- External Tools (Dummy)
     - lookup_flights
     - lookup_hotels
     - book_a_flight
@@ -112,9 +112,15 @@ docker-compose up -d
 ```
 
 ### Non-Containerized Clients
-Starting CLI client.
+Starting CLI client, only available for local use.
 ```bash
-# start cli client only available as local option
+# register new user
+python src/context-updater/cli_client.py --register
+
+# register logout
+python src/context-updater/cli_client.py --logout
+
+# login or enter chat using stored token
 python src/context-updater/cli_client.py
 # or
 python src/context-updater/cli_client.py --debug # show tool calls
@@ -127,7 +133,7 @@ python src/context-updater/web-client/web_gateway.py
 
 Either option should yield following endpoint URLs:
 - MCP - http://127.0.0.1:8000
-    - anonymous user overview - http://127.0.0.1:8000/user_overview
+    - anonymous memory overview - http://127.0.0.1:8000/memory_overview
 - Web-Client - http://127.0.0.1:8001
 
 ## Tests
@@ -137,7 +143,8 @@ Unit testing whether MCP tools work correctly without LLM.
 pipenv install --dev
 
 # MCP functional test
-pytest test/test_server.py -v -s
+pytest test/test_server.py test/test_auth_db.py -v -s
+
 ```
 
 Integration testing whether LLM understands the data from, and can correctly interact with, MCP tools.
@@ -172,11 +179,11 @@ node puppeteer-runner.js tony
 
 
 
-## Limitations and Future Work
+## Future Work
 
 There are several pending tasks on [TODOs](TASKLIST.md).
 - **scalable database**: currently, we're using SQLite to store MCP data. It's definitely not ideal. We can replace the database functions to use more robust database solution e.g., PostgreSQL or managed database services--only modify `server_database.py`.
-- **proper user authentication & authorization**: there's no authentication mechanism per se, only unique user identification. To achieve this, we can 1) implement simple token-based authentication with a set of pre-defined users / roles or 2) implement dynamic registration using well-established protocol such as OAuth.
+- **better user authorization**: current simple token-based authentication may neither scale nor support role-based system. To achieve these requirements, we can implement IAM system that follows least-privilege principles, so each user or client only has access to the tools and actions they actually need.
 - **model performance test**: we use `gpt-4o-mini` for its cost effectiveness. It should be tested whether switching to more advanced models worth the costs for this type of tasks. We can create semantically difficult dataset and questions to test this out.
 
 ## Final Thoughts

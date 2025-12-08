@@ -18,9 +18,18 @@
         }
         .header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            justify-content: space-between;
+            padding: 10px 15px;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 10px; /* space between buttons */
         }
         .header h1 {
             margin: 0;
@@ -93,7 +102,7 @@
             gap: 10px;
             margin-bottom: 10px;
         }
-        input[type="text"] {
+        input[type="text"], input[type="password"] {
             flex: 1;
             padding: 10px;
             border: 1px solid #ddd;
@@ -267,6 +276,54 @@
 </head>
 <body>
     <div class="container">
+
+        <!-- LOGIN PANEL -->
+        <div id="authPanel">
+            <h2>🔐 Login / Register</h2>
+
+            <input id="authUser" type="text" placeholder="Username">
+            <input id="authPass" type="password" placeholder="Password">
+
+            <button onclick="login()">Login</button>
+            <button class="stats-btn" onclick="registerUser()">Register</button>
+
+            <p id="authError" style="color:red; margin-top: 10px;"></p>
+        </div>
+
+        <!-- CHAT PANEL -->
+        <div id="chatPanel" style="display:none;">
+            <div class="header">
+                <div class="header-left">
+                    <h1>💬 Travel Memory Chat</h1>
+                </div>
+
+                <div class="header-right">
+                    <button class="stats-btn" onclick="openAnalyticsModal()">📊 Statistics</button>
+                    <button class="clear-btn" onclick="logout()">Switch User</button>
+                </div>
+            </div>
+
+
+            <p><strong>User:</strong> <span id="displayUser"></span></p>
+
+            <div class="chat-box" id="chatBox"></div>
+
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    placeholder="Type your message..." 
+                    onkeypress="handleKeyPress(event)"
+                >
+                <button onclick="sendMessage()">Send</button>
+                <button class="clear-btn" onclick="clearHistory()">Clear</button>
+            </div>
+
+            <p id="status" style="color: #666; font-size: 12px;"></p>
+        </div>
+    </div>
+
+    <!-- <div class="container">
         <div class="header">
             <h1>💬 Travel Memory Chat - Your Trip Helper</h1>
             <button class="stats-btn" onclick="openAnalyticsModal()">📊 Statistics</button>
@@ -297,7 +354,7 @@
 
         <p id="status" style="color: #666; font-size: 12px;"></p>
     </div>
-
+-->
     <!-- Analytics Modal -->
     <div id="analyticsModal" class="modal">
         <div class="modal-content">
@@ -309,26 +366,138 @@
                 <div class="loading">Loading analytics...</div>
             </div>
         </div>
-    </div>
+    </div> 
 
     <script>
         const API_URL = "/api";
-        let currentUserId = "user123";
+        let token = null;
+        let currentUserId = null;
         let analyticsChart = null;
 
-        function setUserId() {
-            const userId = document.getElementById("userIdInput").value.trim();
-            if (userId) {
-                currentUserId = userId;
-                document.getElementById("chatBox").innerHTML = "";
-                addMessage(`User switched to: ${userId}`, "system");
+        // ----------------------
+        // AUTH FUNCTIONS
+        // ----------------------
+
+        function showAuth() {
+            document.getElementById("authPanel").style.display = "block";
+            document.getElementById("chatPanel").style.display = "none";
+        }
+
+        function showChat() {
+            document.getElementById("authPanel").style.display = "none";
+            document.getElementById("chatPanel").style.display = "block";
+        }
+
+        function loadAuthState() {
+            token = localStorage.getItem("token");
+            currentUserId = localStorage.getItem("user_id");
+
+            if (token && currentUserId) {
+                document.getElementById("displayUser").textContent = currentUserId;
+                showChat();
+            } else {
+                showAuth();
             }
         }
+            
+        async function login() {
+            const user_id = document.getElementById("authUser").value.trim();
+            const password = document.getElementById("authPass").value.trim();
+
+            if (!user_id || !password) {
+                return showAuthError("Missing user_id or password.");
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user_id, password })
+                });
+
+                const data = await res.json();
+
+                if (data.status === "error") {
+                    return showAuthError(data.message);
+                }
+
+                token = data.token;
+                currentUserId = data.user_id;
+
+                localStorage.setItem("token", token);
+                localStorage.setItem("user_id", currentUserId);
+
+                document.getElementById("displayUser").textContent = currentUserId;
+                showChat();
+
+            } catch (err) {
+                showAuthError("Network error. Please try again.");
+            }
+        }
+
+
+        async function registerUser() {
+            const user_id = document.getElementById("authUser").value.trim();
+            const password = document.getElementById("authPass").value.trim();
+
+            if (!user_id || !password) {
+                return showAuthError("Missing user_id or password.");
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user_id, password })
+                });
+
+                const data = await res.json();
+
+                if (data.status === "error") {
+                    return showAuthError(data.message);
+                }
+
+                token = data.token;
+                currentUserId = data.user_id;
+
+                localStorage.setItem("token", token);
+                localStorage.setItem("user_id", currentUserId);
+
+                document.getElementById("displayUser").textContent = currentUserId;
+                showChat();
+
+            } catch (err) {
+                showAuthError("Network error. Please try again.");
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user_id");
+            token = null;
+            currentUserId = null;
+
+            showAuth();
+        }
+
+        function showAuthError(msg) {
+            document.getElementById("authError").textContent = msg;
+        }
+
+        function authHeader() {
+            return {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            };
+        }
+
+        // ----------------------
+        // CHAT FUNCTIONS
+        // ----------------------
 
         async function sendMessage() {
             const input = document.getElementById("messageInput");
             const message = input.value.trim();
-
             if (!message) return;
 
             addMessage(message, "user");
@@ -338,20 +507,15 @@
                 updateStatus("Sending...");
                 const response = await fetch(`${API_URL}/chat`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        user_id: currentUserId,
-                        message: message
-                    })
+                    headers: authHeader(),
+                    body: JSON.stringify({ message })
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
                 const data = await response.json();
                 addMessage(data.response, "assistant");
-                updateStatus("Gateway Connected ✓");
+                updateStatus("Connected ✓");
             } catch (error) {
                 addMessage(`Error: ${error.message}`, "error");
                 updateStatus("Error ✗");
@@ -359,23 +523,22 @@
         }
 
         async function clearHistory() {
-            if (!confirm("Clear conversation history?")) return;
+            if (!confirm("Clear history?")) return;
 
             try {
                 updateStatus("Clearing...");
-                const response = await fetch(`${API_URL}/clear`, {
+                const res = await fetch(`${API_URL}/clear`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ user_id: currentUserId })
+                    headers: authHeader(),
                 });
 
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
                 document.getElementById("chatBox").innerHTML = "";
-                addMessage("History cleared ✓", "system");
-                updateStatus("Connected ✓");
-            } catch (error) {
-                addMessage(`Error: ${error.message}`, "error");
+                addMessage("History cleared.", "system");
+                updateStatus("Done ✓");
+            } catch (err) {
+                addMessage(`Error: ${err.message}`, "error");
                 updateStatus("Error ✗");
             }
         }
@@ -563,6 +726,46 @@
                 updateStatus("Gateway unavailable ✗");
             }
         });
+    
+        // check possible login
+        document.addEventListener("DOMContentLoaded", () => {
+        const savedToken = localStorage.getItem("token");
+        const savedUserId = localStorage.getItem("user_id");
+
+        if (savedToken && savedUserId) {
+            // Optionally verify token with backend:
+            autoLogin(savedToken, savedUserId);
+        }
+    });
+
+    async function autoLogin(token, user_id) {
+        try {
+            const res = await fetch(`${API_URL}/auth-check`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.status === "ok") {
+                // Valid session → show chat UI
+                currentUserId = user_id;
+                showChat();
+                document.getElementById("displayUser").textContent = currentUserId;
+            } else {
+                // Token invalid → clear and show login form
+                localStorage.removeItem("token");
+                localStorage.removeItem("user_id");
+                showAuth();
+            }
+        } catch (err) {
+            console.error("Auto-login failed:", err);
+            showAuth();
+        }
+    }
     </script>
 </body>
 </html>

@@ -1,17 +1,91 @@
 import argparse
 import os
-
-from openai import OpenAI
+from pathlib import Path
+from getpass import getpass
 
 from utils.sanitization import sanitize_user_id
 from client_core import MemoryConversation
 from llm_client import LLMClient, OpenAIAdapter
+from utils.auth import AuthDB
 
 
 # Initialize LLM client
 llm_client: LLMClient = OpenAIAdapter(
     model=os.getenv("OPENAI_MODEL"), api_key=os.getenv("OPENAI_API_KEY")
 )
+
+
+TOKEN_FILE = Path.home() / ".context_mcp_app_token"
+
+auth = AuthDB()
+
+
+# -------------------------------
+# Token handling helpers
+# -------------------------------
+def save_token(token: str):
+    TOKEN_FILE.write_text(token)
+
+
+def load_token() -> str | None:
+    if TOKEN_FILE.exists():
+        return TOKEN_FILE.read_text().strip()
+    return None
+
+
+def clear_token():
+    if TOKEN_FILE.exists():
+        TOKEN_FILE.unlink()
+
+
+# -------------------------------
+# Authentication flow
+# -------------------------------
+def ensure_authenticated() -> str:
+    """Ensure the user is logged in. If token exists, reuse it."""
+    token = load_token()
+
+    if token:
+        user_id = auth.authenticate(token)
+        if user_id:
+            print(f"✔ Logged in as {user_id}")
+            return user_id
+
+        print("⚠ Your session expired. Please login again.")
+        clear_token()
+
+    # Prompt user to login manually
+    while True:
+        print("\n=== Login Required ===")
+        user_id = sanitize_user_id(input("User ID: ").strip())
+        password = getpass("Password: ").strip()
+
+        token = auth.login(user_id, password)
+        if token:
+            save_token(token)
+            print(f"✔ Login successful! Welcome {user_id}.")
+            return user_id
+
+        print("❌ Invalid credentials. Please try again.\n")
+
+
+def register_flow():
+    print("\n=== Register New Account ===")
+    user_id = sanitize_user_id(input("Choose user ID: ").strip())
+    password = getpass("Choose password: ").strip()
+
+    if auth.register(user_id, password):
+        print("✔ Registration successful. You may now login.")
+    else:
+        print("❌ User already exists.")
+
+
+def logout_flow():
+    token = load_token()
+    if token:
+        auth.revoke_token(token)
+        clear_token()
+    print("✔ Logged out.")
 
 
 # ============================================================================
@@ -72,9 +146,29 @@ if __name__ == "__main__":
         action="store_true",
         help="Enable debug mode to display tool callings",
     )
+
+    parser.add_argument(
+        "--register",
+        action="store_true",
+        help="Register a new account",
+    )
+    parser.add_argument(
+        "--logout",
+        action="store_true",
+        help="Logout and clear token",
+    )
+
     args = parser.parse_args()
     debug_mode = args.debug
 
-    user_id = sanitize_user_id(input("Enter user ID: ").strip())
+    # Extra commands
+    if args.register:
+        register_flow()
+        exit()
 
+    if args.logout:
+        logout_flow()
+        exit()
+
+    user_id = ensure_authenticated()
     interactive_chat(user_id)

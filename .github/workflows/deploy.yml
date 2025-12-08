@@ -23,7 +23,7 @@ jobs:
         run: pip install --no-cache-dir -r requirements.txt
 
       - name: Run pytest
-        run: pytest test/test_server.py -v -s
+        run: pytest test/test_server.py test/test_auth_db.py -v -s
 
   # do not use deploy on commit - use github action to complete test before deploy
   deploy:
