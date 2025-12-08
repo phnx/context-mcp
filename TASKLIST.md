@@ -23,12 +23,11 @@ Keeping track of active tasks & statuses
 - demo scenario - auto question set end-to-end testing
 - replace json with sqlite
 - plain authentication at client level
+- final system diagram
 
 ## TODO
-
-- document design decision - system diagram
 - keep deleting code - shaving this yak 🦙
 
 ## DISCONTINUED
-- authorization -> restricted MCP functions e.g., list user -> needs role-based system
+- authorization -> restrict MCP functions e.g., list user -> needs role-based system
 - model performance test -> build set of difficult test cases, e.g., hard semantic similarity questions, to find best-performing models

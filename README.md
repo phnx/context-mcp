@@ -9,7 +9,6 @@ On the analytic side, the application summarizes tool usage statistics to suppor
 
 ## Table of Contents
 1. [System Design](#system-design)
-   - [Architecture Diagram](#architecture-diagram)
    - [MCP Server](#mcp-server)
      - [Tools](#tools)
    - [MCP Client](#mcp-client)
@@ -28,7 +27,7 @@ On the analytic side, the application summarizes tool usage statistics to suppor
    - [Integration Tests (LLM-based)](#integration-tests-llm-based)
    - [End-to-End Scenario (Puppeteer)](#end-to-end-scenario-puppeteer)
 
-4. Deployment
+4. [Deployment](#deployment)
 
 5. [Future Work](#future-work)
 
@@ -36,7 +35,7 @@ On the analytic side, the application summarizes tool usage statistics to suppor
 
 
 ## System Design
-[diagram]
+![diagram](./assets/system-diagram.png)
 
 ### MCP Server
 - Standardized, specific tools made available for LLM to utilize upon natural language query: CRUD operations for user's general memory and travel preferences
