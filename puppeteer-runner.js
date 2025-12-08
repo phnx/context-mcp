@@ -172,15 +172,28 @@ const puppeteer = require('puppeteer');
     await page.goto('http://127.0.0.1:8001');
 
 
-    await page.focus('#userIdInput');
-    await page.$eval('#userIdInput', el => el.value = '');
-    await page.type('#userIdInput', 'Tony');
+    // Register & Login 
+    await page.focus('#authUser');
+    await page.$eval('#authUser', el => el.value = '');
+    await page.type('#authUser', 'tony');
+
+    await page.focus('#authPass');
+    await page.$eval('#authPass', el => el.value = '');
+    await page.type('#authPass', 'tony');
 
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     await page.evaluate(() => {
         const btn = [...document.querySelectorAll('button')]
-            .find(b => b.textContent.trim() === 'Set User');
+            .find(b => b.textContent.trim() === 'Register');
+        btn?.click();
+    });
+
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    await page.evaluate(() => {
+        const btn = [...document.querySelectorAll('button')]
+            .find(b => b.textContent.trim() === 'Login');
         btn?.click();
     });
 

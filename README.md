@@ -7,6 +7,34 @@ It allows different users to store, retrieve, and update their travel preference
 
 On the analytic side, the application summarizes tool usage statistics to support continuous improvement and cost control, answering questions such as  which tool-call sequences happens the more frequently? or which tool incurs most tokens?
 
+## Table of Contents
+1. [System Design](#system-design)
+   - [Architecture Diagram](#architecture-diagram)
+   - [MCP Server](#mcp-server)
+     - [Tools](#tools)
+   - [MCP Client](#mcp-client)
+     - [Command-Line Client](#command-line-client)
+     - [Web Client](#web-client)
+
+2. [Setup, Development, and Usage](#setup-development-and-usage)
+   - [Environment Setup](#environment-setup)
+   - [Dependency Installation](#dependency-installation)
+   - [Running MCP Server & Clients](#running-mcp-server--clients)
+   - [Running Non-Containerized Clients](#running-non-containerized-clients)
+   - [Available Endpoints](#available-endpoints)
+
+3. [Tests](#tests)
+   - [Unit Tests](#unit-tests)
+   - [Integration Tests (LLM-based)](#integration-tests-llm-based)
+   - [End-to-End Scenario (Puppeteer)](#end-to-end-scenario-puppeteer)
+
+4. Deployment
+
+5. [Future Work](#future-work)
+
+6. [Final Thoughts](#final-thoughts)
+
+
 ## System Design
 [diagram]
 
@@ -144,7 +172,6 @@ pipenv install --dev
 
 # MCP functional test
 pytest test/test_server.py test/test_auth_db.py -v -s
-
 ```
 
 Integration testing whether LLM understands the data from, and can correctly interact with, MCP tools.
@@ -172,11 +199,18 @@ npm -v
 npm install puppeteer
 ```
 
-Start testing scenario. This command opens a test browser and run a complete scenario:
+Start testing scenario.
 ```bash
-node puppeteer-runner.js tony
+# use local env to run e2e test
+pipenv shell
+# spin web-client & mcp-server -> run puppeteer
+bash run-puppeteer.sh tony
 ```
-
+## Deployment
+Deploying on Render (see [actions](.github/workflows/deploy.yml) script).
+- MCP - https://context-mcp-server.onrender.com/
+    - anonymous memory overview - https://context-mcp-server.onrender.com/memory_overview
+- Web-Client - https://context-web-client.onrender.com/
 
 
 ## Future Work
