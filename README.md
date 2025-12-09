@@ -14,24 +14,20 @@ On the analytic side, the application summarizes tool usage statistics to suppor
    - [MCP Client](#mcp-client)
      - [Command-Line Client](#command-line-client)
      - [Web Client](#web-client)
-
 2. [Setup, Development, and Usage](#setup-development-and-usage)
    - [Environment Setup](#environment-setup)
    - [Dependency Installation](#dependency-installation)
    - [Running MCP Server & Clients](#running-mcp-server--clients)
    - [Running Non-Containerized Clients](#running-non-containerized-clients)
    - [Available Endpoints](#available-endpoints)
-
 3. [Tests](#tests)
    - [Unit Tests](#unit-tests)
    - [Integration Tests (LLM-based)](#integration-tests-llm-based)
    - [End-to-End Scenario (Puppeteer)](#end-to-end-scenario-puppeteer)
-
 4. [Deployment](#deployment)
-
 5. [Future Work](#future-work)
-
 6. [Final Thoughts](#final-thoughts)
+7. [Appendices: Prompt Testing](#appendices---prompt-testing)
 
 
 ## System Design
@@ -231,3 +227,17 @@ This makes AI coding assistant **very** unreliable.
 Documentation does not provide a good support either.
 Trial-and-error, with very specific questions prompts on small and concise issues, is the best workaround in this case.
 Holistic prompting never works.
+
+## Appendices - Prompt Testing
+Prompt plays important roles in MCP application. To ensure the prompt efficiency, we ran the test on different prompt versions that focus on different aspects: minimalist, exploratory, analytical, risk-awareness, and comprehensiveness.
+We create mock-up conversation scenarios, collect tool usage statistics and response success, and choose the best prompt as the initial version for the application.
+
+![prompt-test](./assets/prompt-test.png)
+
+We combine variant 1 (comprehensive) and variant 2 (analytical) because a well-balanced tool call distribution, reasonable expected responsesm, and acceptable token-out which reflect the LLM cost.
+
+```bash
+pipenv install --dev
+python test/prompt_test/test_prompts.py
+python test/prompt_test/plot_result.py
+```

@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+from pathlib import Path
 from typing import Optional
 
 from fastmcp import Client, FastMCP
@@ -128,7 +129,8 @@ class MemoryConversation:
 
         # Default system prompt
         if system_prompt is None:
-            system_prompt = f"""You are a helpful assistant with memory capabilities. 
+            system_prompt = f"""\
+You are a helpful and careful assistant with memory capabilities, always uses the appropriate tools to retrieve or store user data instead of guessing. 
 You can store and retrieve information about the user (ID: {user_id}).
 
 When user wants to find flights or hotel rooms, use lookup_flights or lookup_hotels to find available services. 
@@ -141,10 +143,13 @@ When you need to recall user's travel preferences, use the retrieve_travel_prefe
 When a user tells you something else about themselves, use the store_memory tool to save it.
 When you need to recall general information about the user, use the retrieve_memory tool.
 
-Delete data using delete_travel_preference and delete_memory ONLY upon user's request.
+Provide clear and detailed options when helping the user, especially for flights and hotels.
 
-Make sure the data of each user is CONFIDENTIAL and PRIVATE to the owner. NEVER share any data of a user to other users.
-Always be friendly and personable, referencing stored preferences and memories when relevant."""
+Never expose or share user data; maintain strict privacy and confidentiality.
+Focus on accurate and precise responses, ensuring that all information provided to the user is consistent with their stored data.
+
+Always be friendly and personable, referencing stored preferences and memories when relevant.
+"""
 
         self.system_prompt = system_prompt
 

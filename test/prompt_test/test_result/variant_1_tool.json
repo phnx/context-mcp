@@ -1,0 +1,52 @@
+{
+  "store_travel_preference": {
+    "calls": 6,
+    "tokens_in": 121,
+    "tokens_out": 656
+  },
+  "lookup_flights": {
+    "calls": 6,
+    "tokens_in": 125,
+    "tokens_out": 1669
+  },
+  "lookup_hotels": {
+    "calls": 4,
+    "tokens_in": 108,
+    "tokens_out": 766
+  },
+  "book_a_flight": {
+    "calls": 2,
+    "tokens_in": 144,
+    "tokens_out": 224
+  },
+  "retrieve_travel_preference": {
+    "calls": 2,
+    "tokens_in": 21,
+    "tokens_out": 379
+  },
+  "delete_travel_preference": {
+    "calls": 3,
+    "tokens_in": 41,
+    "tokens_out": 60
+  },
+  "retrieve_memory": {
+    "calls": 1,
+    "tokens_in": 8,
+    "tokens_out": 19
+  },
+  "update_travel_preference": {
+    "calls": 1,
+    "tokens_in": 18,
+    "tokens_out": 100
+  },
+  "store_memory": {
+    "calls": 2,
+    "tokens_in": 37,
+    "tokens_out": 105
+  },
+  "delete_memory": {
+    "calls": 2,
+    "tokens_in": 27,
+    "tokens_out": 41
+  }
+}

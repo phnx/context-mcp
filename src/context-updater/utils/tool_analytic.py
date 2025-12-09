@@ -1,9 +1,16 @@
 # independent counter class for tool usage using SQLite
+import os
 import sqlite3
 from pathlib import Path
 from typing import Dict
 
 DB_FILE = Path("database/tool_analytic.db")
+TEST_DB_FILE = Path("test/test_tool_analytic.db")
+
+
+def _get_db_path() -> Path:
+    is_test = os.environ.get("IS_MCP_CONTEXT_UPDATER_TEST", "false").lower() == "true"
+    return TEST_DB_FILE if is_test else DB_FILE
 
 
 class ToolCounter:
@@ -11,7 +18,7 @@ class ToolCounter:
 
     def __init__(self):
         """Initialize SQLite database and table."""
-        self.db_file = DB_FILE
+        self.db_file = _get_db_path()
         self._ensure_table_exists()
 
     def _get_conn(self):

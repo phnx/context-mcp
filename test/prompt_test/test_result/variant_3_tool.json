@@ -1,0 +1,27 @@
+{
+  "retrieve_travel_preference": {
+    "calls": 2,
+    "tokens_in": 15,
+    "tokens_out": 124
+  },
+  "store_travel_preference": {
+    "calls": 3,
+    "tokens_in": 54,
+    "tokens_out": 324
+  },
+  "retrieve_memory": {
+    "calls": 1,
+    "tokens_in": 8,
+    "tokens_out": 19
+  },
+  "lookup_flights": {
+    "calls": 1,
+    "tokens_in": 24,
+    "tokens_out": 314
+  },
+  "lookup_hotels": {
+    "calls": 1,
+    "tokens_in": 30,
+    "tokens_out": 129
+  }
+}
