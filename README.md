@@ -140,13 +140,8 @@ Starting CLI client, only available for local use.
 # register new user
 python src/context-updater/cli_client.py --register
 
-# register logout
-python src/context-updater/cli_client.py --logout
-
 # login or enter chat using stored token
 python src/context-updater/cli_client.py
-# or
-python src/context-updater/cli_client.py --debug # show tool calls
 
 # start web gateway & client
 python src/context-updater/web-client/web_gateway.py

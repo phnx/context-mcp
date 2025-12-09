@@ -126,6 +126,7 @@ class MemoryConversation:
 
         self.tools = asyncio.run(get_tools_from_mcp(self.mcp_client))
         self.tool_counter = ToolCounter()
+        self.tool_usage = []
 
         # Default system prompt
         if system_prompt is None:
@@ -234,6 +235,8 @@ Always be friendly and personable, referencing stored preferences and memories w
                     tokens_in=tool_input_tokens,
                     tokens_out=tool_output_tokens,
                 )
+
+                self.tool_usage.append(tool_name)
 
                 allowed_tool_calls -= 1
 

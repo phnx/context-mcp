@@ -24,11 +24,10 @@ Keeping track of active tasks & statuses
 - replace json with sqlite
 - plain authentication at client level
 - final system diagram
-- prompt test
+- update prompt with test results
+- a bit more fancy cli
 
 ## TODO
-
-- fancy cli
 - keep deleting code - shaving this yak 🦙
 
 ## DISCONTINUED
