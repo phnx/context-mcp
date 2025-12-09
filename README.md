@@ -33,30 +33,51 @@ On the analytic side, the application summarizes tool usage statistics to suppor
 ## System Design
 ![diagram](./assets/system-diagram.png)
 
+### Key Design Rationale
+
+1. **Containerized MCP Server**
+   - Chosen over serverless to maintain persistent DB connections, stable multi-turn tool state, and reproducible deployment for both MCP server and gateway.
+
+2. **Clear Server–Gateway Separation**
+   - MCP server handles tool execution and memory logic; the Python API Gateway manages browser-safe access, authentication, and LLM request shaping.  
+   - Prevents exposing secrets and keeps protocol logic clean.
+
+3. **Database Design**
+   - `SQLite` for portability and local testing; modular data access enables drop-in replacement with PostgreSQL for production.
+
+4. **Authentication & Isolation**
+   - Registration, token issuance, and strict per-user data isolation via `user_id`; architecture leaves room for RBAC/IAM extensions.
+
+5. **Unified Client Architecture**
+   - CLI and web clients share a single `client_core`, ensuring consistent MCP behavior without duplicating logic.  
+   - Web client only communicates through the gateway for security and simplicity.
+   - **Ease of Use:** Both clients expose a simple chat interface, user memory retrieval, making interaction symmetric across environments.
+
+
+6. **Tooling Structure**
+   - Memory, travel-preference, and external *dummy* tools model different MCP interaction patterns, CRUD state, retrieval, and simulated external actions, supporting robust LLM behavior testing.
+
+7. **Testability & Analytics**
+   - Built-in tool-usage analytics for understanding LLM behavior and token cost.  
+   - Multi-layer testing (unit, LLM integration, Puppeteer E2E) ensures reliability and controlled prompt evaluation.
+
+8. **Stack Choices**
+   - `FastMCP` for standardized MCP protocol and tool execution, LLM interoperability via Pydantic.
+   - `FastAPI` for the simple, asynchronous-friendly API gateway.
+   - `Render` for fast containerized-app hosting.
+   - `Pytest` + `Puppeteer` for unit, integration, and end-to-end testing.
+
+
 ### MCP Server
 - Standardized, specific tools made available for LLM to utilize upon natural language query: CRUD operations for user's general memory and travel preferences
 - Unified datamodel and data storage for context memory
 - Containerized: more persistent, suitable for LLM integration than serverless deployment
 
 
-#### Tools
-- Travel Preferences
-    - store_travel_preference
-    - retrieve_travel_preference
-    - update_travel_preference
-    - delete_travel_preference
-
-- General Memories
-    - store_memory
-    - retrieve_memory
-    - update_memory
-    - delete_memory
-
-- External Tools (Dummy)
-    - lookup_flights
-    - lookup_hotels
-    - book_a_flight
-    - book_a_hotel
+#### Available Tools
+The core engine that exposes standardized tools to the LLM.
+- **Context Tools:** `store_`, `retrieve_`, `update_`, `delete_` for both *Travel Preferences* and *General Memory*.
+- **External Service Simulation:** Dummy tools for `lookup_flights`, `book_hotels`, etc., to test complex tool-chaining capabilities.
 
 
 ### MCP Client
@@ -206,9 +227,9 @@ Deploying on Render (see [actions](.github/workflows/deploy.yml) script).
 ## Future Work
 
 There are several pending tasks on [TODOs](TASKLIST.md).
-- **scalable database**: currently, we're using SQLite to store MCP data. It's definitely not ideal. We can replace the database functions to use more robust database solution e.g., PostgreSQL or managed database services--only modify `server_database.py`.
-- **better user authorization**: current simple token-based authentication may neither scale nor support role-based system. To achieve these requirements, we can implement IAM system that follows least-privilege principles, so each user or client only has access to the tools and actions they actually need.
-- **model performance test**: we use `gpt-4o-mini` for its cost effectiveness. It should be tested whether switching to more advanced models worth the costs for this type of tasks. We can create semantically difficult dataset and questions to test this out.
+- **scalable database**: currently, I use SQLite to store MCP data. It's definitely not ideal. I can replace the database functions to use more robust database solution e.g., PostgreSQL or managed database services--only modify `server_database.py`.
+- **better user authorization**: current simple token-based authentication may neither scale nor support role-based system. To achieve these requirements, I can implement IAM system that follows least-privilege principles, so each user or client only has access to the tools and actions they actually need.
+- **model performance test**: I use `gpt-4o-mini` for its cost effectiveness. It should be tested whether switching to more advanced models worth the costs for this type of tasks. I can create semantically difficult dataset and questions to test this out.
 
 ## Final Thoughts
 
@@ -224,12 +245,12 @@ Trial-and-error, with very specific questions prompts on small and concise issue
 Holistic prompting never works.
 
 ## Appendices - Prompt Testing
-Prompt plays important roles in MCP application. To ensure the prompt efficiency, we ran the test on different prompt versions that focus on different aspects: minimalist, exploratory, analytical, risk-awareness, and comprehensiveness.
-We create mock-up conversation scenarios, collect tool usage statistics and response success, and choose the best prompt as the initial version for the application.
+Prompt plays important roles in MCP application. To ensure the prompt efficiency, I ran the test on different prompt versions that focus on different aspects: minimalist, exploratory, analytical, risk-awareness, and comprehensiveness.
+I create mock-up conversation scenarios, collect tool usage statistics and response success, and choose the best prompt as the initial version for the application.
 
 ![prompt-test](./assets/prompt-test.png)
 
-We combine variant 1 (comprehensive) and variant 2 (analytical) because a well-balanced tool call distribution, reasonable expected responses, and acceptable tokens-out which reflect the LLM cost.
+I combine variant 1 (comprehensive) and variant 2 (analytical) because a well-balanced tool call distribution, reasonable expected responses, and acceptable tokens-out which reflect the LLM cost.
 
 ```bash
 pipenv install --dev
