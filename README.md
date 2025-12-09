@@ -229,7 +229,7 @@ We create mock-up conversation scenarios, collect tool usage statistics and resp
 
 ![prompt-test](./assets/prompt-test.png)
 
-We combine variant 1 (comprehensive) and variant 2 (analytical) because a well-balanced tool call distribution, reasonable expected responsesm, and acceptable token-out which reflect the LLM cost.
+We combine variant 1 (comprehensive) and variant 2 (analytical) because a well-balanced tool call distribution, reasonable expected responses, and acceptable tokens-out which reflect the LLM cost.
 
 ```bash
 pipenv install --dev
