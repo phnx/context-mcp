@@ -37,6 +37,7 @@ On the analytic side, the application summarizes tool usage statistics to suppor
 
 1. **Containerized MCP Server**
    - Chosen over serverless to maintain persistent DB connections, stable multi-turn tool state, and reproducible deployment for both MCP server and gateway.
+   - Provides lightweight process and network isolation, allowing the MCP server to run with minimal privileges and internal-only access.
 
 2. **Clear Server–Gateway Separation**
    - MCP server handles tool execution and memory logic; the Python API Gateway manages browser-safe access, authentication, and LLM request shaping.  
