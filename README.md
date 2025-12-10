@@ -52,6 +52,7 @@ On the analytic side, the application summarizes tool usage statistics to suppor
    - CLI and web clients share a single `client_core`, ensuring consistent MCP behavior without duplicating logic.  
    - Web client only communicates through the gateway for security and simplicity.
    - **Ease of Use:** Both clients expose a simple chat interface, user memory retrieval, making interaction symmetric across environments.
+   - **LLM Client Adapter:** A pluggable LLM adapter abstracts API calls, allowing the system to switch between different LLM providers without modifying client logic.
 
 
 6. **Tooling Structure**
